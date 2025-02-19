@@ -1,10 +1,9 @@
 #pragma once
 
-typedef unsigned char       U8;
-typedef unsigned short      U16;
-typedef unsigned int        U32;
-typedef unsigned long long  U64;
-
+typedef unsigned char       U8;  //byte
+typedef unsigned short      U16; //halfword
+typedef unsigned int        U32; //word
+typedef unsigned long long  U64; //double word
 
 #define ASSERT(ERR_MSG, X)      if(!(X))\
                                {\

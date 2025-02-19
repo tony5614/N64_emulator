@@ -56,6 +56,11 @@ public:
     U32 HI,LO;
 	U32 EPC; //exception program counter
 
+	U32 memory[4096];//actually 4MB
+
+
+
+
 	void ADD(INSTRUCTION_PTR inst);
 	void ADDI(INSTRUCTION_PTR inst);
 	void ADDIU(INSTRUCTION_PTR inst);
@@ -109,9 +114,6 @@ public:
 	void XORI(INSTRUCTION_PTR inst);
 
 
-
-
-
 	void BEQ(INSTRUCTION_PTR inst);
 	void BEQL(INSTRUCTION_PTR inst);
 	void BGEZ(INSTRUCTION_PTR inst);
@@ -132,6 +134,39 @@ public:
 	void JAL(INSTRUCTION_PTR inst);
 	void JALR(INSTRUCTION_PTR inst);
 	void JR(INSTRUCTION_PTR inst);
+
+	void LB    (INSTRUCTION_PTR inst);
+	void LBU   (INSTRUCTION_PTR inst);
+	void LD    (INSTRUCTION_PTR inst);
+	void LDL   (INSTRUCTION_PTR inst);
+	void LDR   (INSTRUCTION_PTR inst);
+	void LH    (INSTRUCTION_PTR inst);
+	void LHU   (INSTRUCTION_PTR inst);
+	void LL    (INSTRUCTION_PTR inst);
+	void LLD   (INSTRUCTION_PTR inst);
+	void LW    (INSTRUCTION_PTR inst);
+	void LWL   (INSTRUCTION_PTR inst);
+	void LWR   (INSTRUCTION_PTR inst);
+	void LWU   (INSTRUCTION_PTR inst);
+	void SB    (INSTRUCTION_PTR inst);
+	void SC    (INSTRUCTION_PTR inst);
+	void SCD   (INSTRUCTION_PTR inst);
+	void SD    (INSTRUCTION_PTR inst);
+	void SDL   (INSTRUCTION_PTR inst);
+	void SDR   (INSTRUCTION_PTR inst);
+	void SH    (INSTRUCTION_PTR inst);
+	void SW    (INSTRUCTION_PTR inst);
+	void SWL   (INSTRUCTION_PTR inst);
+	void SWR   (INSTRUCTION_PTR inst);
+	void SYNC  (INSTRUCTION_PTR inst);
+
+
+
+
+
+
+
+
 
 	void BREAK(INSTRUCTION_PTR inst);
 	void SYSCALL(INSTRUCTION_PTR inst);

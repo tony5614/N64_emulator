@@ -499,6 +499,56 @@ void R4300::JR(INSTRUCTION_PTR inst)
 	this->PC = this->GPR[inst->r_type.rs];
 }
 
+void R4300::LB(INSTRUCTION_PTR inst)
+{
+	this->GPR[inst->i_type.rt] = (U8)(this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset]);
+}
+
+void R4300::LBU(INSTRUCTION_PTR inst)
+{
+	this->GPR[inst->i_type.rt] = (U8)(this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset]);
+}
+
+void R4300::LD(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::LDL(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::LDR(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::LH(INSTRUCTION_PTR inst)
+{
+	this->GPR[inst->i_type.rt] = (U16)(this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset]);
+}
+
+void R4300::LHU(INSTRUCTION_PTR inst)
+{
+	this->GPR[inst->i_type.rt] = (U16)(this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset]);
+}
+
+void R4300::LL(INSTRUCTION_PTR inst)
+{
+	this->GPR[inst->i_type.rt] = this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset];
+}
+
+void R4300::LLD(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::LW(INSTRUCTION_PTR inst)
+{
+	this->GPR[inst->i_type.rt] = this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset];
+}
+
 void R4300::SYSCALL(INSTRUCTION_PTR inst)
 {
 	this->EPC = this->PC;
