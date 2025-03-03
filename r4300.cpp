@@ -560,6 +560,12 @@ void R4300::SB(INSTRUCTION_PTR inst)
 	this->memory[this->GPR[inst->i_type.immediate] + this->GPR[inst->i_type.offset]] |= (U8)this->GPR[inst->i_type.rt];
 }
 
+void R4300::SC(INSTRUCTION_PTR inst)
+{
+	this->memory[this->GPR[inst->i_type.rs] + this->GPR[inst->i_type.offset]] = this->GPR[inst->i_type.rt];
+	this->GPR[inst->i_type.rt] = 1;
+}
+
 void R4300::SYSCALL(INSTRUCTION_PTR inst)
 {
 	this->EPC = this->PC;
