@@ -1,4 +1,4 @@
-#include "r4300.h"
+﻿#include "r4300.h"
 
 void R4300::run()
 {
@@ -549,6 +549,32 @@ void R4300::LW(INSTRUCTION_PTR inst)
 	this->GPR[inst->i_type.rt] = this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset];
 }
 
+void R4300::LWL(INSTRUCTION_PTR inst)
+{
+	U32 addr = this->GPR[inst->i_type.rs] + inst->i_type.offset;
+	U32 word_addr = addr & ~0x3;  // 計算對齊的 4-byte 地址
+	U32 word = this->memory[word_addr]; // 讀取 32-bit 數據
+
+	int shift = (3 - (addr & 0x3)) * 8;  // 計算左移位數（大端序）
+	U32 mask = 0xFFFFFFFF << shift; // 產生覆蓋高位的掩碼
+
+									// 只修改高位，低位保持原值
+	this->GPR[inst->i_type.rt] = (word << shift) | (this->GPR[inst->i_type.rt] & ~mask);
+}
+
+void R4300::LWR(INSTRUCTION_PTR inst) 
+{
+	U32 addr = this->GPR[inst->i_type.rs] + inst->i_type.offset;
+	U32 word_addr = addr & ~0x3;  // 取得 4-byte 對齊的地址
+	U32 word = this->memory[word_addr]; // 讀取 32-bit 數據
+
+	int shift = (addr & 0x3) * 8;  // 計算右移位數（大端序）
+	U32 mask = 0xFFFFFFFF >> shift; // 產生覆蓋低位的掩碼
+
+									// 只修改低位，高位保持原值
+	this->GPR[inst->i_type.rt] = (word >> shift) | (this->GPR[inst->i_type.rt] & ~mask);
+}
+
 void R4300::LWU(INSTRUCTION_PTR inst)
 {
 	this->GPR[inst->i_type.rt] = this->memory[this->GPR[inst->i_type.immediate] + inst->i_type.offset];
@@ -556,15 +582,84 @@ void R4300::LWU(INSTRUCTION_PTR inst)
 
 void R4300::SB(INSTRUCTION_PTR inst)
 {
-	this->memory[this->GPR[inst->i_type.immediate] + this->GPR[inst->i_type.offset]]  &= 0xFFFFFF00;
-	this->memory[this->GPR[inst->i_type.immediate] + this->GPR[inst->i_type.offset]] |= (U8)this->GPR[inst->i_type.rt];
+	this->memory[this->GPR[inst->i_type.immediate] +inst->i_type.offset]  &= 0xFFFFFF00;
+	this->memory[this->GPR[inst->i_type.immediate] +inst->i_type.offset] |= (U8)this->GPR[inst->i_type.rt];
 }
 
 void R4300::SC(INSTRUCTION_PTR inst)
 {
-	this->memory[this->GPR[inst->i_type.rs] + this->GPR[inst->i_type.offset]] = this->GPR[inst->i_type.rt];
+	this->memory[this->GPR[inst->i_type.rs] +inst->i_type.offset] = this->GPR[inst->i_type.rt];
 	this->GPR[inst->i_type.rt] = 1;
 }
+
+void R4300::SCD(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+	this->memory[this->GPR[inst->i_type.rs] +inst->i_type.offset] = this->GPR[inst->i_type.rt];
+	this->GPR[inst->i_type.rt] = 1;
+}
+
+void R4300::SD(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::SDL(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::SDR(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::SH(INSTRUCTION_PTR inst)
+{
+	this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset] &= 0xFFFF0000;
+	this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset] |= (U16)this->GPR[inst->i_type.rt];
+}
+
+void R4300::SW(INSTRUCTION_PTR inst)
+{
+	this->memory[this->GPR[inst->i_type.rs] + inst->i_type.offset] = this->GPR[inst->i_type.rt];
+}
+
+void R4300::SWL(INSTRUCTION_PTR inst)
+{
+	U32 addr = this->GPR[inst->i_type.rs] + inst->i_type.offset;  // 計算目標地址
+	U32 word_addr = addr & ~0x3;  // 計算對齊的4-byte地址
+								  // 從寄存器中取得要儲存的32-bit數據
+	U32 value_to_store = this->GPR[inst->i_type.rt];	
+	int shift = (addr & 0x3) * 8;// 計算右移位數（大端序）	
+	U32 current_word = this->memory[word_addr];// 從記憶體中讀取當前對齊的32-bit數據	
+	this->memory[word_addr] = (current_word & (0xFFFFFFFF >> (32 - shift))) |		(value_to_store >> shift);// 更新記憶體值：只修改高位部分，低位保持原值
+}
+
+void R4300::SWR(INSTRUCTION_PTR inst)
+{
+	U32 addr = this->GPR[inst->i_type.rs] + inst->i_type.offset;  // 计算目标地址
+	U32 word_addr = addr & ~0x3;  // 计算对齐的4-byte地址
+
+								  // 从寄存器中取得要存储的32-bit数据
+	U32 value_to_store = this->GPR[inst->i_type.rt];
+
+	// 从内存中读取当前对齐的32-bit数据
+	U32 current_word = this->memory[word_addr];
+
+	// 计算左移位数（大端序）
+	int shift = (addr & 0x3) * 8;
+
+	// 更新内存值：只修改低位部分，高位保持原值
+	this->memory[word_addr] = (current_word & (0xFFFFFFFF << shift)) |
+		(value_to_store << shift);
+}
+
+void R4300::SYNC(INSTRUCTION_PTR inst)
+{
+}
+
+
 
 void R4300::SYSCALL(INSTRUCTION_PTR inst)
 {
