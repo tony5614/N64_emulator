@@ -65,14 +65,28 @@ public:
 		}
 		return this->raw_data[addr];
 	}
+	// ¥H 32-bit¡]INSTRUCTION¡^¦s¨ú
+	INSTRUCTION &operator()(U32 addr)
+	{
+		// mapping
+		if (addr >= 0x80000000)
+		{
+			addr -= 0x80000000;
+		}
+		return *(reinterpret_cast<INSTRUCTION*>(&this->raw_data[addr]));
+	}
 };
+
+
+
 
 class R4300
 {
 public:
 	//registers
 	void run();
-	void decode(U32 instruction);
+	void decode(INSTRUCTION *inst);
+	void read_rom(std::string filename);
 
 	U32 PC;
 	U32 sr; //status register
@@ -82,10 +96,9 @@ public:
 	U32 EPC; //exception program counter
 
 	MEMORY memory;
+	R4300();
 
-
-	void read_rom(std::string filename);
-
+	void(R4300::*r_type_special_fp[43])(INSTRUCTION_PTR inst);
 
 	void ADD(INSTRUCTION_PTR inst);
 	void ADDI(INSTRUCTION_PTR inst);

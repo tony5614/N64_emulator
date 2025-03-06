@@ -2,80 +2,61 @@
 
 void R4300::run()
 {
+	INSTRUCTION inst = (INSTRUCTION)this->memory(this->PC);
 	while (true) 
 	{
-
+		this->decode(&inst);
+		
 	}
 }
-void R4300::decode(U32 instruction)
+void R4300::decode(INSTRUCTION *inst)
 {
-	INSTRUCTION_PTR instruct;
-	switch (instruct->i_type.op)
+	switch (inst->i_type.op)
 	{
-	case 0x0:     //register type
-		switch (instruct->r_type.funct)
-		{
-		case 0x20:     //ADD
-			break;
-		case 0x21:     //ADDU
-			break;
-		case 0x24:     //AND
-			break;
-		case 0x27:     //NOR
-			break;
-		case 0x25:     //OR
-			break;
-		case 0x2A:     //SLT
-			break;
-		case 0x2B:     //SLTU
-			break;
-		case 0x22:     //SUB
-			break;
-		case 0x23:     //SUBU
-			break;
-		case 0x26:     //XOR
-			break;
-		case 0x00:     //SLL
-			break;
-		case 0x04:     //SLLV 
-			break;
-		case 0x03:     //SRA
-			break;
-		case 0x07:     //SRAV
-			break;
-		case 0x02:     //SRL 
-			break;
-		case 0x06:     //SRLV 
-			break;
-		case 0x1A:     //DIV
-			break;
-		case 0x1B:     //DIVU
-			break;
-		case 0x10:     //MFHI
-			break;
-		case 0x12:     //MFLO
-			break;
-		case 0x11:     //MTHI 
-			break;
-		case 0x13:     //MTLO
-			break;
-		case 0x18:     //MULT 
-			break;
-		case 0x19:     //MULTU
-			break;
-		case 0x0D:     //BREAK
-			break;
-		case 0x09:     //JALR
-			break;
-		case 0x08:     //JR
-			break;
-		case 0x0C:     //SYSCALL
-			break;
-		}
+	case 0x0:     //register type special
+		(this->*r_type_special_fp[inst->r_type.funct])(inst);
+		break;
+	case 0x1:     //REGIMM  
+		(this->*r_type_special_fp[inst->r_type.funct])(inst);
+		break;
+		
 	}
 
 }
 
+
+R4300::R4300() 
+{
+	this->PC = 0x80246000;
+
+	this->r_type_special_fp[0x00] = &R4300::SLL;
+	this->r_type_special_fp[0x02] = &R4300::SRL;
+	this->r_type_special_fp[0x03] = &R4300::SRA;
+	this->r_type_special_fp[0x04] = &R4300::SLLV;
+	this->r_type_special_fp[0x07] = &R4300::SRAV;
+	this->r_type_special_fp[0x06] = &R4300::SRLV;
+	this->r_type_special_fp[0x09] = &R4300::JALR;
+	this->r_type_special_fp[0x08] = &R4300::JR;
+	this->r_type_special_fp[0x0C] = &R4300::SYSCALL;
+	this->r_type_special_fp[0x0D] = &R4300::BREAK;
+	this->r_type_special_fp[0x10] = &R4300::MFHI;
+	this->r_type_special_fp[0x12] = &R4300::MFLO;
+	this->r_type_special_fp[0x11] = &R4300::MTHI;
+	this->r_type_special_fp[0x13] = &R4300::MTLO;
+	this->r_type_special_fp[0x18] = &R4300::MULT;
+	this->r_type_special_fp[0x19] = &R4300::MULTU;
+	this->r_type_special_fp[0x1A] = &R4300::DIV;
+	this->r_type_special_fp[0x1B] = &R4300::DIVU;
+	this->r_type_special_fp[0x20] = &R4300::ADD;
+	this->r_type_special_fp[0x21] = &R4300::ADDU;
+	this->r_type_special_fp[0x22] = &R4300::SUB;
+	this->r_type_special_fp[0x23] = &R4300::SUBU;
+	this->r_type_special_fp[0x24] = &R4300::AND;
+	this->r_type_special_fp[0x25] = &R4300::OR;
+	this->r_type_special_fp[0x26] = &R4300::XOR;
+	this->r_type_special_fp[0x27] = &R4300::NOR;
+	this->r_type_special_fp[0x2A] = &R4300::SLT;
+}
 
 void R4300::read_rom(std::string filename)
 {
@@ -91,12 +72,9 @@ void R4300::read_rom(std::string filename)
 	fin.read(reinterpret_cast<char*>(this->memory.raw_data), 4096);
 
 	std::streamsize bytesRead = fin.gcount();
-	if (bytesRead < 4) {
-		printf("Failed to read 4 bytes. Only %ld bytes read.\n", bytesRead);
-	}
-	else {
-		printf("%02X %02X %02X %02X\n", this->memory.raw_data[0], this->memory.raw_data[1], this->memory.raw_data[2], this->memory.raw_data[3]);
-	}
+
+	printf("%02X %02X %02X %02X\n", this->memory.raw_data[0], this->memory.raw_data[1], this->memory.raw_data[2], this->memory.raw_data[3]);
+
 
 	fin.close();
 }
@@ -663,19 +641,19 @@ void R4300::SWL(INSTRUCTION_PTR inst)
 
 void R4300::SWR(INSTRUCTION_PTR inst)
 {
-	U32 addr = this->GPR[inst->i_type.rs] + inst->i_type.offset;  // 计算目标地址
-	U32 word_addr = addr & ~0x3;  // 计算对齐的4-byte地址
+	U32 addr = this->GPR[inst->i_type.rs] + inst->i_type.offset;  // 計算目標地址
+	U32 word_addr = addr & ~0x3;  // 計算對齊的4-byte地址
 
-								  // 从寄存器中取得要存储的32-bit数据
+								  // 從寄存器中取得要儲存的32-bit數據
 	U32 value_to_store = this->GPR[inst->i_type.rt];
 
-	// 从内存中读取当前对齐的32-bit数据
+	// 從記憶體中讀取當前對齊的32-bit數據
 	U32 current_word = this->memory[word_addr];
 
-	// 计算左移位数（大端序）
+	// 計算左移位數（大端序）
 	int shift = (addr & 0x3) * 8;
 
-	// 更新内存值：只修改低位部分，高位保持原值
+	// 更新記憶體值：只修改低位部分，高位保持原值
 	this->memory[word_addr] = (current_word & (0xFFFFFFFF << shift)) |
 		(value_to_store << shift);
 }
