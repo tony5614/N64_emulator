@@ -1,6 +1,12 @@
 #pragma once
 #include "common.h"
 #include "stdio.h"
+#include <stdlib.h>
+#include <iostream>
+#include "fstream"
+#include <sstream>
+#include <iomanip>
+#include <string>
 
 //opcode
 
@@ -42,6 +48,25 @@ typedef union instruction
 }INSTRUCTION, *INSTRUCTION_PTR;
 
 
+
+
+
+
+class MEMORY 
+{
+public:
+	U8 raw_data[4096];
+	U8 &operator[](U32 addr) 
+	{
+		//mapping
+		if (addr > 0x80000000) 
+		{	
+			addr -= 0x80000000;
+		}
+		return this->raw_data[addr];
+	}
+};
+
 class R4300
 {
 public:
@@ -56,9 +81,10 @@ public:
     U32 HI,LO;
 	U32 EPC; //exception program counter
 
-	U32 memory[4096];//actually 4MB
+	MEMORY memory;
 
 
+	void read_rom(std::string filename);
 
 
 	void ADD(INSTRUCTION_PTR inst);

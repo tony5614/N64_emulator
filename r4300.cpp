@@ -76,6 +76,31 @@ void R4300::decode(U32 instruction)
 
 }
 
+
+void R4300::read_rom(std::string filename)
+{
+	std::ifstream fin;
+	fin.open(filename.c_str(), std::ios::in | std::ios::binary);
+	if (!fin.is_open()) {
+		printf("Failed to open file: %s\n", filename.c_str());
+		return;
+	}
+
+	printf("Opened\n");
+
+	fin.read(reinterpret_cast<char*>(this->memory.raw_data), 4096);
+
+	std::streamsize bytesRead = fin.gcount();
+	if (bytesRead < 4) {
+		printf("Failed to read 4 bytes. Only %ld bytes read.\n", bytesRead);
+	}
+	else {
+		printf("%02X %02X %02X %02X\n", this->memory.raw_data[0], this->memory.raw_data[1], this->memory.raw_data[2], this->memory.raw_data[3]);
+	}
+
+	fin.close();
+}
+
 void R4300::ADD(INSTRUCTION_PTR inst)
 {
 	this->GPR[inst->r_type.rd] = this->GPR[inst->r_type.rs] + this->GPR[inst->r_type.rt];
