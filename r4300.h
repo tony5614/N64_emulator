@@ -98,7 +98,9 @@ public:
 	MEMORY memory;
 	R4300();
 
-	void(R4300::*r_type_special_fp[43])(INSTRUCTION_PTR inst);
+	void(R4300::*r_type_special_fp[44])(INSTRUCTION_PTR inst);
+	void(R4300::*instruction_fp[44])(INSTRUCTION_PTR inst);
+
 
 	void ADD(INSTRUCTION_PTR inst);
 	void ADDI(INSTRUCTION_PTR inst);
@@ -201,7 +203,8 @@ public:
 
 
 
-
+	voidMFC0
+		voidMTC0
 
 
 

@@ -17,9 +17,25 @@ void R4300::decode(INSTRUCTION *inst)
 		(this->*r_type_special_fp[inst->r_type.funct])(inst);
 		break;
 	case 0x1:     //REGIMM  
+		switch (inst->i_type.rt)
+		{
+		case 0x00:
+			this->BGEZ(inst);
+			break;
+		case 0x01:
+			this->BGEZAL(inst);
+			break;
+		case 0x10:
+			this->BLTZ(inst);
+			break;
+		case 0x11:
+			this->BLTZAL(inst);
+			break;
+		}
+		break;
+		defualt:
 		(this->*r_type_special_fp[inst->r_type.funct])(inst);
 		break;
-		
 	}
 
 }
@@ -29,33 +45,48 @@ R4300::R4300()
 {
 	this->PC = 0x80246000;
 
-	this->r_type_special_fp[0x00] = &R4300::SLL;
-	this->r_type_special_fp[0x02] = &R4300::SRL;
-	this->r_type_special_fp[0x03] = &R4300::SRA;
-	this->r_type_special_fp[0x04] = &R4300::SLLV;
-	this->r_type_special_fp[0x07] = &R4300::SRAV;
-	this->r_type_special_fp[0x06] = &R4300::SRLV;
-	this->r_type_special_fp[0x09] = &R4300::JALR;
-	this->r_type_special_fp[0x08] = &R4300::JR;
-	this->r_type_special_fp[0x0C] = &R4300::SYSCALL;
-	this->r_type_special_fp[0x0D] = &R4300::BREAK;
-	this->r_type_special_fp[0x10] = &R4300::MFHI;
-	this->r_type_special_fp[0x12] = &R4300::MFLO;
-	this->r_type_special_fp[0x11] = &R4300::MTHI;
-	this->r_type_special_fp[0x13] = &R4300::MTLO;
-	this->r_type_special_fp[0x18] = &R4300::MULT;
-	this->r_type_special_fp[0x19] = &R4300::MULTU;
-	this->r_type_special_fp[0x1A] = &R4300::DIV;
-	this->r_type_special_fp[0x1B] = &R4300::DIVU;
-	this->r_type_special_fp[0x20] = &R4300::ADD;
-	this->r_type_special_fp[0x21] = &R4300::ADDU;
-	this->r_type_special_fp[0x22] = &R4300::SUB;
-	this->r_type_special_fp[0x23] = &R4300::SUBU;
-	this->r_type_special_fp[0x24] = &R4300::AND;
-	this->r_type_special_fp[0x25] = &R4300::OR;
-	this->r_type_special_fp[0x26] = &R4300::XOR;
-	this->r_type_special_fp[0x27] = &R4300::NOR;
-	this->r_type_special_fp[0x2A] = &R4300::SLT;
+	this->r_type_special_fp[0] = &R4300::SLL;
+	this->r_type_special_fp[2] = &R4300::SRL;
+	this->r_type_special_fp[3] = &R4300::SRA;
+	this->r_type_special_fp[4] = &R4300::SLLV;
+	this->r_type_special_fp[6] = &R4300::SRLV;
+	this->r_type_special_fp[7] = &R4300::SRAV;
+	this->r_type_special_fp[8] = &R4300::JR;
+	this->r_type_special_fp[9] = &R4300::JALR;
+	this->r_type_special_fp[13] = &R4300::BREAK;
+	this->r_type_special_fp[32] = &R4300::ADD;
+	this->r_type_special_fp[33] = &R4300::ADDU;
+	this->r_type_special_fp[34] = &R4300::SUB;
+	this->r_type_special_fp[35] = &R4300::SUBU;
+	this->r_type_special_fp[36] = &R4300::AND;
+	this->r_type_special_fp[37] = &R4300::OR;
+	this->r_type_special_fp[38] = &R4300::XOR;
+	this->r_type_special_fp[39] = &R4300::NOR;
+	this->r_type_special_fp[42] = &R4300::SLT;
+	this->r_type_special_fp[43] = &R4300::SLTU;
+
+	this->r_type_special_fp[2] = &R4300::J;
+	this->r_type_special_fp[3] = &R4300::JAL;
+	this->r_type_special_fp[4] = &R4300::BEQ;
+	this->r_type_special_fp[5] = &R4300::BNE;
+	this->r_type_special_fp[6] = &R4300::BLEZ;
+	this->r_type_special_fp[7] = &R4300::BGTZ;
+	this->r_type_special_fp[8] = &R4300::ADDI;
+	this->r_type_special_fp[9] = &R4300::ADDIU;
+	this->r_type_special_fp[10] = &R4300::SLTI;
+	this->r_type_special_fp[11] = &R4300::SLTIU;
+	this->r_type_special_fp[12] = &R4300::ANDI;
+	this->r_type_special_fp[13] = &R4300::ORI;
+	this->r_type_special_fp[14] = &R4300::XORI;
+	this->r_type_special_fp[15] = &R4300::LUI;
+	this->r_type_special_fp[32] = &R4300::LB;
+	this->r_type_special_fp[33] = &R4300::LH;
+	this->r_type_special_fp[35] = &R4300::LW;
+	this->r_type_special_fp[36] = &R4300::LBU;
+	this->r_type_special_fp[37] = &R4300::LHU;
+	this->r_type_special_fp[40] = &R4300::SB;
+	this->r_type_special_fp[41] = &R4300::SH;
+	this->r_type_special_fp[43] = &R4300::SW;
 }
 
 void R4300::read_rom(std::string filename)
