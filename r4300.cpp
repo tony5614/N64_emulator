@@ -11,12 +11,12 @@ void R4300::run()
 }
 void R4300::decode(INSTRUCTION *inst)
 {
-	switch (inst->i_type.op)
+	switch (inst->r_type.op)
 	{
-	case 0x0:     //register type special
-		(this->*r_type_special_fp[inst->r_type.funct])(inst);
+	case 0x00:     //register type special
+		(this->*special_fp[inst->r_type.funct])(inst);
 		break;
-	case 0x1:     //REGIMM  
+	case 0x01:     //REGIMM  
 		switch (inst->i_type.rt)
 		{
 		case 0x00:
@@ -33,8 +33,43 @@ void R4300::decode(INSTRUCTION *inst)
 			break;
 		}
 		break;
+
 		defualt:
-		(this->*r_type_special_fp[inst->r_type.funct])(inst);
+		(this->*special_fp[inst->r_type.op])(inst);
+		break;
+	case 0x10:     //COP0  
+		switch (inst->cop0_type.fmt)
+		{
+		case 0x00:
+			this->MFC0(inst);
+			break;
+		case 0x01:
+			this->MTC0(inst);
+			break;
+		default:
+			ASSERT("unkonwn opcode",0);
+			break;
+
+		}
+	case 0x12:     //COP2(RCP)
+		switch (inst->cop2_type.fmt)
+		{
+		case 0x00:
+			this->MFC2(inst);
+			break;
+		case 0x02:
+			this->CFC2(inst);
+			break;
+		case 0x04:
+			this->MTC0(inst);
+			break;
+		case 0x06:
+			this->CTC2(inst);
+			break;
+		default:
+			(this->*rcp_vector_fp[inst->cop2_type.fmt])(inst);
+			break;
+		}
 		break;
 	}
 
@@ -45,48 +80,93 @@ R4300::R4300()
 {
 	this->PC = 0x80246000;
 
-	this->r_type_special_fp[0] = &R4300::SLL;
-	this->r_type_special_fp[2] = &R4300::SRL;
-	this->r_type_special_fp[3] = &R4300::SRA;
-	this->r_type_special_fp[4] = &R4300::SLLV;
-	this->r_type_special_fp[6] = &R4300::SRLV;
-	this->r_type_special_fp[7] = &R4300::SRAV;
-	this->r_type_special_fp[8] = &R4300::JR;
-	this->r_type_special_fp[9] = &R4300::JALR;
-	this->r_type_special_fp[13] = &R4300::BREAK;
-	this->r_type_special_fp[32] = &R4300::ADD;
-	this->r_type_special_fp[33] = &R4300::ADDU;
-	this->r_type_special_fp[34] = &R4300::SUB;
-	this->r_type_special_fp[35] = &R4300::SUBU;
-	this->r_type_special_fp[36] = &R4300::AND;
-	this->r_type_special_fp[37] = &R4300::OR;
-	this->r_type_special_fp[38] = &R4300::XOR;
-	this->r_type_special_fp[39] = &R4300::NOR;
-	this->r_type_special_fp[42] = &R4300::SLT;
-	this->r_type_special_fp[43] = &R4300::SLTU;
+	this->special_fp[0] = &R4300::SLL;
+	this->special_fp[2] = &R4300::SRL;
+	this->special_fp[3] = &R4300::SRA;
+	this->special_fp[4] = &R4300::SLLV;
+	this->special_fp[6] = &R4300::SRLV;
+	this->special_fp[7] = &R4300::SRAV;
+	this->special_fp[8] = &R4300::JR;
+	this->special_fp[9] = &R4300::JALR;
+	this->special_fp[13] = &R4300::BREAK;
+	this->special_fp[32] = &R4300::ADD;
+	this->special_fp[33] = &R4300::ADDU;
+	this->special_fp[34] = &R4300::SUB;
+	this->special_fp[35] = &R4300::SUBU;
+	this->special_fp[36] = &R4300::AND;
+	this->special_fp[37] = &R4300::OR;
+	this->special_fp[38] = &R4300::XOR;
+	this->special_fp[39] = &R4300::NOR;
+	this->special_fp[42] = &R4300::SLT;
+	this->special_fp[43] = &R4300::SLTU;
 
-	this->r_type_special_fp[2] = &R4300::J;
-	this->r_type_special_fp[3] = &R4300::JAL;
-	this->r_type_special_fp[4] = &R4300::BEQ;
-	this->r_type_special_fp[5] = &R4300::BNE;
-	this->r_type_special_fp[6] = &R4300::BLEZ;
-	this->r_type_special_fp[7] = &R4300::BGTZ;
-	this->r_type_special_fp[8] = &R4300::ADDI;
-	this->r_type_special_fp[9] = &R4300::ADDIU;
-	this->r_type_special_fp[10] = &R4300::SLTI;
-	this->r_type_special_fp[11] = &R4300::SLTIU;
-	this->r_type_special_fp[12] = &R4300::ANDI;
-	this->r_type_special_fp[13] = &R4300::ORI;
-	this->r_type_special_fp[14] = &R4300::XORI;
-	this->r_type_special_fp[15] = &R4300::LUI;
-	this->r_type_special_fp[32] = &R4300::LB;
-	this->r_type_special_fp[33] = &R4300::LH;
-	this->r_type_special_fp[35] = &R4300::LW;
-	this->r_type_special_fp[36] = &R4300::LBU;
-	this->r_type_special_fp[37] = &R4300::LHU;
-	this->r_type_special_fp[40] = &R4300::SB;
-	this->r_type_special_fp[41] = &R4300::SH;
-	this->r_type_special_fp[43] = &R4300::SW;
+	this->instruction_fp[2] = &R4300::J;
+	this->instruction_fp[3] = &R4300::JAL;
+	this->instruction_fp[4] = &R4300::BEQ;
+	this->instruction_fp[5] = &R4300::BNE;
+	this->instruction_fp[6] = &R4300::BLEZ;
+	this->instruction_fp[7] = &R4300::BGTZ;
+	this->instruction_fp[8] = &R4300::ADDI;
+	this->instruction_fp[9] = &R4300::ADDIU;
+	this->instruction_fp[10] = &R4300::SLTI;
+	this->instruction_fp[11] = &R4300::SLTIU;
+	this->instruction_fp[12] = &R4300::ANDI;
+	this->instruction_fp[13] = &R4300::ORI;
+	this->instruction_fp[14] = &R4300::XORI;
+	this->instruction_fp[15] = &R4300::LUI;
+	this->instruction_fp[32] = &R4300::LB;
+	this->instruction_fp[33] = &R4300::LH;
+	this->instruction_fp[35] = &R4300::LW;
+	this->instruction_fp[36] = &R4300::LBU;
+	this->instruction_fp[37] = &R4300::LHU;
+	this->instruction_fp[40] = &R4300::SB;
+	this->instruction_fp[41] = &R4300::SH;
+	this->instruction_fp[43] = &R4300::SW;
+
+	//rcp vector opcode
+	this->rcp_vector_fp[0] = &R4300::VMULF;
+	this->rcp_vector_fp[1] = &R4300::VMULU;
+	this->rcp_vector_fp[2] = &R4300::VRNDP;
+	this->rcp_vector_fp[3] = &R4300::VMULQ;
+	this->rcp_vector_fp[4] = &R4300::VMUDL;
+	this->rcp_vector_fp[5] = &R4300::VMUDM;
+	this->rcp_vector_fp[6] = &R4300::VMUDN;
+	this->rcp_vector_fp[7] = &R4300::VMUDH;
+	this->rcp_vector_fp[8] = &R4300::VMACF;
+	this->rcp_vector_fp[9] = &R4300::VMACU;
+	this->rcp_vector_fp[10] = &R4300::VRNDN;
+	this->rcp_vector_fp[11] = &R4300::VMACQ;
+	this->rcp_vector_fp[12] = &R4300::VMADL;
+	this->rcp_vector_fp[13] = &R4300::VMADM;
+	this->rcp_vector_fp[14] = &R4300::VMADN;
+	this->rcp_vector_fp[15] = &R4300::VMADH;
+	this->rcp_vector_fp[16] = &R4300::VADD;
+	this->rcp_vector_fp[17] = &R4300::VSUB;
+	this->rcp_vector_fp[19] = &R4300::VABS;
+	this->rcp_vector_fp[20] = &R4300::VADDC;
+	this->rcp_vector_fp[21] = &R4300::VSUBC;
+	this->rcp_vector_fp[29] = &R4300::VSAW;
+	this->rcp_vector_fp[32] = &R4300::VLT;
+	this->rcp_vector_fp[33] = &R4300::VEQ;
+	this->rcp_vector_fp[34] = &R4300::VNE;
+	this->rcp_vector_fp[35] = &R4300::VGE;
+	this->rcp_vector_fp[36] = &R4300::VCL;
+	this->rcp_vector_fp[37] = &R4300::VCH;
+	this->rcp_vector_fp[38] = &R4300::VCR;
+	this->rcp_vector_fp[39] = &R4300::VMRG;
+	this->rcp_vector_fp[40] = &R4300::VAND;
+	this->rcp_vector_fp[41] = &R4300::VNAND;
+	this->rcp_vector_fp[42] = &R4300::VOR;
+	this->rcp_vector_fp[43] = &R4300::VNOR;
+	this->rcp_vector_fp[44] = &R4300::VXOR;
+	this->rcp_vector_fp[45] = &R4300::VNXOR;
+	this->rcp_vector_fp[48] = &R4300::VRCP;
+	this->rcp_vector_fp[49] = &R4300::VRCPL;
+	this->rcp_vector_fp[50] = &R4300::VRCPH;
+	this->rcp_vector_fp[51] = &R4300::VMOV;
+	this->rcp_vector_fp[52] = &R4300::VRSQ;
+	this->rcp_vector_fp[53] = &R4300::VRSQL;
+	this->rcp_vector_fp[54] = &R4300::VRSQH;
 }
 
 void R4300::read_rom(std::string filename)
@@ -693,6 +773,32 @@ void R4300::SYNC(INSTRUCTION_PTR inst)
 {
 }
 
+void R4300::MFC0(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::MTC0(INSTRUCTION_PTR inst)
+{
+	ASSERT(__FUNCTION__, 0);
+}
+
+void R4300::MFC2(INSTRUCTION_PTR inst)
+{
+}
+
+void R4300::CFC2(INSTRUCTION_PTR inst)
+{
+}
+
+void R4300::MTC2(INSTRUCTION_PTR inst)
+{
+}
+
+void R4300::CTC2(INSTRUCTION_PTR inst)
+{
+}
+
 
 
 void R4300::SYSCALL(INSTRUCTION_PTR inst)
@@ -700,3 +806,50 @@ void R4300::SYSCALL(INSTRUCTION_PTR inst)
 	this->EPC = this->PC;
 	this->PC = 0x3C;
 }
+
+
+void R4300::VMULF(INSTRUCTION_PTR inst) {};
+void R4300::VMULU(INSTRUCTION_PTR inst) {};
+void R4300::VRNDP(INSTRUCTION_PTR inst) {};
+void R4300::VMULQ(INSTRUCTION_PTR inst) {};
+void R4300::VMUDL(INSTRUCTION_PTR inst) {};
+void R4300::VMUDM(INSTRUCTION_PTR inst) {};
+void R4300::VMUDN(INSTRUCTION_PTR inst) {};
+void R4300::VMUDH(INSTRUCTION_PTR inst) {};
+void R4300::VMACF(INSTRUCTION_PTR inst) {};
+void R4300::VMACU(INSTRUCTION_PTR inst) {};
+void R4300::VRNDN(INSTRUCTION_PTR inst) {};
+void R4300::VMACQ(INSTRUCTION_PTR inst) {};
+void R4300::VMADL(INSTRUCTION_PTR inst) {};
+void R4300::VMADM(INSTRUCTION_PTR inst) {};
+void R4300::VMADN(INSTRUCTION_PTR inst) {};
+void R4300::VMADH(INSTRUCTION_PTR inst) {};
+void R4300::VADD(INSTRUCTION_PTR inst) {};
+void R4300::VSUB(INSTRUCTION_PTR inst) {};
+void R4300::VABS(INSTRUCTION_PTR inst) {};
+void R4300::VADDC(INSTRUCTION_PTR inst) {};
+void R4300::VSUBC(INSTRUCTION_PTR inst) {};
+void R4300::VSAW(INSTRUCTION_PTR inst) {};
+void R4300::VLT(INSTRUCTION_PTR inst) {};
+void R4300::VEQ(INSTRUCTION_PTR inst) {};
+void R4300::VNE(INSTRUCTION_PTR inst) {};
+void R4300::VGE(INSTRUCTION_PTR inst) {};
+void R4300::VCL(INSTRUCTION_PTR inst) {};
+void R4300::VCH(INSTRUCTION_PTR inst) {};
+void R4300::VCR(INSTRUCTION_PTR inst) {};
+void R4300::VMRG(INSTRUCTION_PTR inst) {};
+void R4300::VAND(INSTRUCTION_PTR inst) {};
+void R4300::VNAND(INSTRUCTION_PTR inst) {};
+void R4300::VOR(INSTRUCTION_PTR inst) {};
+void R4300::VNOR(INSTRUCTION_PTR inst) {};
+void R4300::VXOR(INSTRUCTION_PTR inst) {};
+void R4300::VNXOR(INSTRUCTION_PTR inst) {};
+void R4300::VRCP(INSTRUCTION_PTR inst) {};
+void R4300::VRCPL(INSTRUCTION_PTR inst) {};
+void R4300::VRCPH(INSTRUCTION_PTR inst) {};
+void R4300::VMOV(INSTRUCTION_PTR inst) {};
+void R4300::VRSQ(INSTRUCTION_PTR inst) {};
+void R4300::VRSQL(INSTRUCTION_PTR inst) {};
+void R4300::VRSQH(INSTRUCTION_PTR inst) {};
+
+

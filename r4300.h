@@ -17,33 +17,66 @@ typedef union instruction
 	//immediate type
 	struct
 	{
+		U32 op : 6;
+		U32 rs : 5;
+		U32 rt : 5;
 		union 
 		{
 			U32 immediate : 16;
 			U32 offset : 16;
 		};
-		U32 rt : 5;
-		U32 rs : 5;
-		U32 op : 6;
 	}i_type;
 
 	//jump type
 	struct
 	{
-		U32 target : 26;
 		U32 op : 6;
+		U32 target : 26;
 	}j_type;
 
 	//register type
 	struct
 	{
-		U32 funct : 6;
-		U32 sa : 5;
-		U32 rd : 5;
-		U32 rt : 5;
-		U32 rs : 5;
 		U32 op : 6;
+		U32 rs : 5;
+		U32 rt : 5;
+		U32 rd : 5;
+		U32 sa : 5;
+		U32 funct : 6;
 	}r_type;
+
+
+	//cop2 type	struct reality coprocessor(RCP)
+	struct
+	{
+		U32 op : 6;
+		union
+		{
+			U32 fmt : 6;
+			struct
+			{
+				U32 el : 5;
+				U32 one : 1;
+			}vec;
+		};
+		U32 s2 : 5;
+		U32 s1 : 5;
+		U32 dest : 5;
+		U32 six_zero :6;
+
+	}cop2_type;
+
+
+	//cop0 type	struct
+	struct
+	{
+		U32 op : 6;
+		U32 fmt : 5;
+		U32 rt : 5;
+		U32 fs : 5;
+		U32 na : 11;
+	}cop0_type;
+
 
 }INSTRUCTION, *INSTRUCTION_PTR;
 
@@ -98,9 +131,9 @@ public:
 	MEMORY memory;
 	R4300();
 
-	void(R4300::*r_type_special_fp[44])(INSTRUCTION_PTR inst);
+	void(R4300::*special_fp[44])(INSTRUCTION_PTR inst);
 	void(R4300::*instruction_fp[44])(INSTRUCTION_PTR inst);
-
+	void(R4300::*rcp_vector_fp[44])(INSTRUCTION_PTR inst);
 
 	void ADD(INSTRUCTION_PTR inst);
 	void ADDI(INSTRUCTION_PTR inst);
@@ -203,8 +236,56 @@ public:
 
 
 
-	voidMFC0
-		voidMTC0
+	void MFC0(INSTRUCTION_PTR inst);
+    void MTC0(INSTRUCTION_PTR inst);
+	void MFC2(INSTRUCTION_PTR inst);
+	void CFC2(INSTRUCTION_PTR inst);
+	void MTC2(INSTRUCTION_PTR inst);
+	void CTC2(INSTRUCTION_PTR inst);
+
+	void VMULF(INSTRUCTION_PTR inst);
+	void VMULU(INSTRUCTION_PTR inst);
+	void VRNDP(INSTRUCTION_PTR inst);
+	void VMULQ(INSTRUCTION_PTR inst);
+	void VMUDL(INSTRUCTION_PTR inst);
+	void VMUDM(INSTRUCTION_PTR inst);
+	void VMUDN(INSTRUCTION_PTR inst);
+	void VMUDH(INSTRUCTION_PTR inst);
+	void VMACF(INSTRUCTION_PTR inst);
+	void VMACU(INSTRUCTION_PTR inst);
+	void VRNDN(INSTRUCTION_PTR inst);
+	void VMACQ(INSTRUCTION_PTR inst);
+	void VMADL(INSTRUCTION_PTR inst);
+	void VMADM(INSTRUCTION_PTR inst);
+	void VMADN(INSTRUCTION_PTR inst);
+	void VMADH(INSTRUCTION_PTR inst);
+	void VADD(INSTRUCTION_PTR inst);
+	void VSUB(INSTRUCTION_PTR inst);
+	void VABS(INSTRUCTION_PTR inst);
+	void VADDC(INSTRUCTION_PTR inst);
+	void VSUBC(INSTRUCTION_PTR inst);
+	void VSAW(INSTRUCTION_PTR inst);
+	void VLT(INSTRUCTION_PTR inst);
+	void VEQ(INSTRUCTION_PTR inst);
+	void VNE(INSTRUCTION_PTR inst);
+	void VGE(INSTRUCTION_PTR inst);
+	void VCL(INSTRUCTION_PTR inst);
+	void VCH(INSTRUCTION_PTR inst);
+	void VCR(INSTRUCTION_PTR inst);
+	void VMRG(INSTRUCTION_PTR inst);
+	void VAND(INSTRUCTION_PTR inst);
+	void VNAND(INSTRUCTION_PTR inst);
+	void VOR(INSTRUCTION_PTR inst);
+	void VNOR(INSTRUCTION_PTR inst);
+	void VXOR(INSTRUCTION_PTR inst);
+	void VNXOR(INSTRUCTION_PTR inst);
+	void VRCP(INSTRUCTION_PTR inst);
+	void VRCPL(INSTRUCTION_PTR inst);
+	void VRCPH(INSTRUCTION_PTR inst);
+	void VMOV(INSTRUCTION_PTR inst);
+	void VRSQ(INSTRUCTION_PTR inst);
+	void VRSQL(INSTRUCTION_PTR inst);
+	void VRSQH(INSTRUCTION_PTR inst);
 
 
 
