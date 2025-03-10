@@ -2,11 +2,14 @@
 
 void R4300::run()
 {
-	INSTRUCTION inst = (INSTRUCTION)this->memory(this->PC);
+	INSTRUCTION inst;
 	while (true) 
 	{
+		inst = (INSTRUCTION)this->memory(this->PC);
+
 		this->decode(&inst);
-		
+
+		this->PC+=4;
 	}
 }
 void R4300::decode(INSTRUCTION *inst)
@@ -14,6 +17,8 @@ void R4300::decode(INSTRUCTION *inst)
 	switch (inst->r_type.op)
 	{
 	case 0x00:     //register type special
+		printf("register type special\n");
+		printf("%d %d %d %d %d %d", inst->r_type.op, inst->r_type.rs, inst->r_type.rt, inst->r_type.rd, inst->r_type.sa, inst->r_type.funct);
 		(this->*special_fp[inst->r_type.funct])(inst);
 		break;
 	case 0x01:     //REGIMM  
@@ -414,7 +419,9 @@ void R4300::DSUBU(INSTRUCTION_PTR inst)
 
 void R4300::LUI(INSTRUCTION_PTR inst)
 {
-this->GPR[inst->i_type.rt] =  inst->i_type.immediate << 16;
+	this->GPR[inst->i_type.rt] =  inst->i_type.immediate << 16;
+	printf(__FUNCTION__);
+	printf("\n");
 }
 
 void R4300::MFHI(INSTRUCTION_PTR inst)
